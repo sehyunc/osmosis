@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/osmosis-labs/osmosis/v12/x/nftfactory/types"
 )
 
@@ -17,7 +18,7 @@ func (k Keeper) CreateDenom(ctx sdk.Context, denomId, senderAddr, denomName, den
 	})
 }
 
-func (k Keeper) Mint(ctx sdk.Context, denomId string, senderAddr string, amount sdk.Coin) error {
+func (k Keeper) Mint(ctx sdk.Context, tokenID string, senderAddr string, amount sdk.Coin) error {
 	// validate denom
 	err := k.bankKeeper.MintCoins(ctx, types.ModuleName, sdk.NewCoins(amount))
 	if err != nil {
@@ -30,16 +31,16 @@ func (k Keeper) Mint(ctx sdk.Context, denomId string, senderAddr string, amount 
 	}
 
 	// TODO: check if the module denom is the denom that exist in the state
-	denom, denomExists := k.GetDenom(ctx, denomId)
+	denom, denomExists := k.GetDenom(ctx, amount.Denom)
 	if !denomExists {
 		return fmt.Errorf("denomID %s does not exist", denom.Id)
 	}
 
 	// TODO: check if the nft id already exist
 	// Get current latest token id and increment?
-	tokenIdExists := k.HasNFT(ctx, denomId, '1')
+	tokenIdExists := k.HasNFT(ctx, amount.Denom, tokenID)
 	if tokenIdExists {
-		return fmt.Errorf("tokenID %s already exists", '1')
+		return fmt.Errorf("tokenID %s already exists", tokenID)
 	}
 
 	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, addr, sdk.NewCoins(amount))
